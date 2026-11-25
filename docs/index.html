@@ -18,12 +18,12 @@ section{margin-top:40px}h2{font-size:14px;letter-spacing:3px;color:var(--mut);fo
 h2 b{color:var(--ink);font-size:24px;letter-spacing:1px;display:block}
 iframe{display:block;width:100%;border:0;background:transparent}
 .grid{display:grid;grid-template-columns:minmax(0,62fr) minmax(0,38fr);gap:16px;margin-top:12px}
-.scroll{overflow-x:auto}.scroll iframe{min-width:760px}.scroll.c iframe{min-width:980px}
+.scroll{overflow-x:auto;scrollbar-width:none}.scroll::-webkit-scrollbar{display:none}
 .info{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
 .info div{border:1px solid var(--line);border-radius:14px;padding:16px;background:#FFFFFF08}.info h3{margin:0 0 6px;font-size:15px;color:var(--lime)}.info p{margin:0;color:var(--mut);font-size:14px}
 .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}.shots img{width:100%;border-radius:12px;border:1px solid var(--line)}
 footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
-@media (max-width:860px){.grid{grid-template-columns:1fr}.hero h1{font-size:30px}.wrap{padding:24px 16px 40px}.bar{margin:24px -16px 0;padding:10px 16px}}
+@media (max-width:1100px){.grid{grid-template-columns:1fr}}@media (max-width:860px){.scroll iframe{min-width:640px}.scroll.c iframe{min-width:860px}.hero h1{font-size:30px}.wrap{padding:24px 16px 40px}.bar{margin:24px -16px 0;padding:10px 16px}}
 </style></head><body><div class="wrap">
 <header class="hero"><h1>Painel Financeiro <span>· Rede de Academias</span></h1>
 <p>Projeto de Business Intelligence em Power BI: acompanhamento de receita, despesas e resultado frente ao orçamento, mais a DRE gerencial por semestre, para uma rede com 6 unidades. Os dados são fictícios e vão de janeiro a outubro de 2026.</p>
@@ -43,7 +43,7 @@ footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(
 <div><h3>Regra de cores</h3><p>Verde quando o resultado é bom e vermelho quando é ruim. Nas despesas a lógica se inverte. No orçado x realizado, o semáforo é ≤ 100%, ≤ 105% e acima disso.</p></div>
 </div></section>
 <section id="prints"><h2>NO POWER BI DESKTOP<b>Prints do relatório</b></h2><div class="shots">
-<img src="../imagens/painel_financeiro.jpg" alt="Página Financeiro no Power BI"><img src="../imagens/painel_dre.jpg" alt="Página DRE no Power BI"></div></section>
+<img src="imagens/painel_financeiro.jpg" alt="Página Financeiro no Power BI"><img src="imagens/painel_dre.jpg" alt="Página DRE no Power BI"></div></section>
 <footer>Os painéis desta página são a mesma saída HTML das medidas DAX do relatório, calculada para cada unidade. Arquivos do projeto e scripts estão no repositório.</footer>
 </div>
 <script>
