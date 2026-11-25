@@ -1,0 +1,64 @@
+createOrReplace
+
+	ref table _Medidas
+
+		measure 'HTML Cartões' = ```
+			VAR Rec = [Receita]
+			VAR RecO = [Receita Orçada]
+			VAR Desp = [Despesas]
+			VAR DespO = [Despesas Orçadas]
+			VAR Res = [Resultado]
+			VAR ResO = [Resultado Orçado]
+			VAR Mg = [Margem %]
+			VAR MgO = [Margem Orçada %]
+			VAR Bom = "#C6FF00"
+			VAR Ruim = "#FF3B5C"
+			VAR _RecAbs = ABS(Rec)
+			VAR fRec = IF(Rec < 0, "-", "") & "R$ " & IF(_RecAbs >= 1000000, FORMAT(_RecAbs / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_RecAbs / 1000, "#,0", "pt-BR") & " mil")
+			VAR _RecOAbs = ABS(RecO)
+			VAR fRecO = IF(RecO < 0, "-", "") & "R$ " & IF(_RecOAbs >= 1000000, FORMAT(_RecOAbs / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_RecOAbs / 1000, "#,0", "pt-BR") & " mil")
+			VAR _DespAbs = ABS(Desp)
+			VAR fDesp = IF(Desp < 0, "-", "") & "R$ " & IF(_DespAbs >= 1000000, FORMAT(_DespAbs / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_DespAbs / 1000, "#,0", "pt-BR") & " mil")
+			VAR _DespOAbs = ABS(DespO)
+			VAR fDespO = IF(DespO < 0, "-", "") & "R$ " & IF(_DespOAbs >= 1000000, FORMAT(_DespOAbs / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_DespOAbs / 1000, "#,0", "pt-BR") & " mil")
+			VAR _ResAbs = ABS(Res)
+			VAR fRes = IF(Res < 0, "-", "") & "R$ " & IF(_ResAbs >= 1000000, FORMAT(_ResAbs / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_ResAbs / 1000, "#,0", "pt-BR") & " mil")
+			VAR _ResOAbs = ABS(ResO)
+			VAR fResO = IF(ResO < 0, "-", "") & "R$ " & IF(_ResOAbs >= 1000000, FORMAT(_ResOAbs / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_ResOAbs / 1000, "#,0", "pt-BR") & " mil")
+			VAR fMg = FORMAT(Mg, "0.0%", "pt-BR")
+			VAR fMgO = FORMAT(MgO, "0.0%", "pt-BR")
+			VAR vRec = DIVIDE(Rec - RecO, ABS(RecO))
+			VAR tRec = FORMAT(vRec, "+0.0%;-0.0%;0.0%", "pt-BR")
+			VAR sRec = IF(Rec >= RecO, "▲", "▼")
+			VAR _RecMax = MAX(ABS(Rec), ABS(RecO))
+			VAR wRec = INT(DIVIDE(ABS(Rec), _RecMax) * 100)
+			VAR wRecO = INT(DIVIDE(ABS(RecO), _RecMax) * 100)
+			VAR vDesp = DIVIDE(Desp - DespO, ABS(DespO))
+			VAR tDesp = FORMAT(vDesp, "+0.0%;-0.0%;0.0%", "pt-BR")
+			VAR sDesp = IF(Desp >= DespO, "▲", "▼")
+			VAR _DespMax = MAX(ABS(Desp), ABS(DespO))
+			VAR wDesp = INT(DIVIDE(ABS(Desp), _DespMax) * 100)
+			VAR wDespO = INT(DIVIDE(ABS(DespO), _DespMax) * 100)
+			VAR vRes = DIVIDE(Res - ResO, ABS(ResO))
+			VAR tRes = FORMAT(vRes, "+0.0%;-0.0%;0.0%", "pt-BR")
+			VAR sRes = IF(Res >= ResO, "▲", "▼")
+			VAR _ResMax = MAX(ABS(Res), ABS(ResO))
+			VAR wRes = INT(DIVIDE(ABS(Res), _ResMax) * 100)
+			VAR wResO = INT(DIVIDE(ABS(ResO), _ResMax) * 100)
+			VAR cRec = IF(Rec >= RecO, Bom, Ruim)
+			VAR cDesp = IF(Desp <= DespO, Bom, Ruim)
+			VAR cRes = IF(Res >= ResO, Bom, Ruim)
+			VAR cMg = IF(Mg >= MgO, Bom, Ruim)
+			VAR tMg = FORMAT((Mg - MgO) * 100, "+0.0;-0.0;0.0", "pt-BR") & " p.p."
+			VAR sMg = IF(Mg >= MgO, "▲", "▼")
+			VAR _MgMax = MAX(ABS(Mg), ABS(MgO))
+			VAR wMg = INT(DIVIDE(ABS(Mg), _MgMax) * 100)
+			VAR wMgO = INT(DIVIDE(ABS(MgO), _MgMax) * 100)
+			RETURN
+			"<style>.hc{display:flex;gap:12px;width:100%;height:132px;box-sizing:border-box;padding:4px;overflow:hidden;background:transparent;font-family:Segoe UI,Arial,sans-serif}.hc .c{flex:1;min-width:0;box-sizing:border-box;height:124px;padding:12px 16px;border-radius:16px;position:relative;overflow:hidden;background:linear-gradient(135deg,#FFFFFF1F,#FFFFFF08);border:1px solid #FFFFFF2E;backdrop-filter:blur(12px);box-shadow:0 0 18px #00B3FF33,inset 0 1px 0 #FFFFFF26;opacity:0;animation:hcUp 700ms ease-out forwards}.hc .c:before{content:'';position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,#C6FF00,#00B3FF)}.hc .t{font-size:12px;line-height:16px;letter-spacing:2px;font-weight:600;color:#9FB3C8}.hc .v{font-size:30px;line-height:36px;font-weight:700;color:#FFFFFF;white-space:nowrap;text-shadow:0 0 14px #00B3FF80}.hc .bs{margin:6px 0 8px 0}.hc .b{height:4px;border-radius:4px;background:#FFFFFF14;margin-top:3px;overflow:hidden}.hc .b i{display:block;height:4px;border-radius:4px;animation:hcGrow 1100ms ease-out}.hc .f{display:flex;justify-content:space-between;align-items:center;gap:8px;white-space:nowrap;overflow:hidden}.hc .p{font-size:12px;line-height:16px;font-weight:700;padding:1px 8px;border:1px solid;border-radius:12px}.hc .o{font-size:12px;line-height:16px;color:#9FB3C8;overflow:hidden;text-overflow:ellipsis}@keyframes hcUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes hcGrow{from{width:0}}</style><div class='hc'>" &
+			"<div class='c' style='animation-delay:0ms'><div class='t'>RECEITA</div><div class='v'>" & fRec & "</div><div class='bs'><div class='b'><i style='width:" & wRec & "%;background:" & cRec & ";box-shadow:0 0 8px " & cRec & "'></i></div><div class='b'><i style='width:" & wRecO & "%;background:#00B3FF'></i></div></div><div class='f'><span class='p' style='color:" & cRec & ";border-color:" & cRec & "'>" & sRec & " " & tRec & "</span><span class='o'>Orç. " & fRecO & "</span></div></div>" &
+			"<div class='c' style='animation-delay:120ms'><div class='t'>DESPESAS</div><div class='v'>" & fDesp & "</div><div class='bs'><div class='b'><i style='width:" & wDesp & "%;background:" & cDesp & ";box-shadow:0 0 8px " & cDesp & "'></i></div><div class='b'><i style='width:" & wDespO & "%;background:#00B3FF'></i></div></div><div class='f'><span class='p' style='color:" & cDesp & ";border-color:" & cDesp & "'>" & sDesp & " " & tDesp & "</span><span class='o'>Orç. " & fDespO & "</span></div></div>" &
+			"<div class='c' style='animation-delay:240ms'><div class='t'>RESULTADO</div><div class='v'>" & fRes & "</div><div class='bs'><div class='b'><i style='width:" & wRes & "%;background:" & cRes & ";box-shadow:0 0 8px " & cRes & "'></i></div><div class='b'><i style='width:" & wResO & "%;background:#00B3FF'></i></div></div><div class='f'><span class='p' style='color:" & cRes & ";border-color:" & cRes & "'>" & sRes & " " & tRes & "</span><span class='o'>Orç. " & fResO & "</span></div></div>" &
+			"<div class='c' style='animation-delay:360ms'><div class='t'>MARGEM</div><div class='v'>" & fMg & "</div><div class='bs'><div class='b'><i style='width:" & wMg & "%;background:" & cMg & ";box-shadow:0 0 8px " & cMg & "'></i></div><div class='b'><i style='width:" & wMgO & "%;background:#00B3FF'></i></div></div><div class='f'><span class='p' style='color:" & cMg & ";border-color:" & cMg & "'>" & sMg & " " & tMg & "</span><span class='o'>Orç. " & fMgO & "</span></div></div>" &
+			"</div>"
+			```

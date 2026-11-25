@@ -1,0 +1,70 @@
+createOrReplace
+
+	ref table _Medidas
+
+		measure 'HTML Cascata' = ```
+			VAR Rec = [Receita]
+			VAR G = ADDCOLUMNS(SUMMARIZE(FILTER(dContas, dContas[Tipo] <> "Receita"), dContas[Grupo], dContas[Ordem DRE]), "@v", [Despesas])
+			VAR G2 = ADDCOLUMNS(G, "@fim", VAR oD = dContas[Ordem DRE] RETURN Rec - SUMX(FILTER(G, dContas[Ordem DRE] <= oD), [@v]))
+			VAR Res = Rec - SUMX(G, [@v])
+			VAR Topo = MAX(Rec, MAXX(G2, [@fim] + [@v]))
+			VAR Base = MIN(0, MINX(G2, [@fim]))
+			VAR Amp = IF(Topo - Base <= 0, 1, Topo - Base)
+			VAR Z = INT((Topo - 0) / Amp * 100)
+			VAR UltOrdem = MAXX(G, dContas[Ordem DRE])
+			VAR tRec = INT((Topo - MAX(Rec, 0)) / Amp * 100)
+			VAR hRec = MAX(1, INT(ABS(Rec) / Amp * 100))
+			VAR eRec = INT((Topo - Rec) / Amp * 100)
+			VAR vRec = IF(Rec < 0, "-", "") & "R$ " & IF(ABS(Rec) >= 1000000, FORMAT(ABS(Rec) / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(ABS(Rec) / 1000, "#,0", "pt-BR") & " mil")
+			VAR tRes = INT((Topo - MAX(Res, 0)) / Amp * 100)
+			VAR hRes = MAX(1, INT(ABS(Res) / Amp * 100))
+			VAR vRes = IF(Res < 0, "-", "") & "R$ " & IF(ABS(Res) >= 1000000, FORMAT(ABS(Res) / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(ABS(Res) / 1000, "#,0", "pt-BR") & " mil")
+			VAR cRes = IF(Res >= 0, "#C6FF00", "#FF3B5C")
+			VAR dRes = INT((UltOrdem + 1) * 90)
+			VAR Colunas = CONCATENATEX(G2,
+			    VAR ini = [@fim] + [@v]
+			    VAR fim = [@fim]
+			    VAR xT = INT((Topo - MAX(ini, fim)) / Amp * 100)
+			    VAR xH = MAX(1, INT(ABS([@v]) / Amp * 100))
+			    VAR xE = INT((Topo - fim) / Amp * 100)
+			    VAR neg = -[@v]
+			    VAR xV = IF(neg < 0, "-", "") & "R$ " & IF(ABS(neg) >= 1000000, FORMAT(ABS(neg) / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(ABS(neg) / 1000, "#,0", "pt-BR") & " mil")
+			    VAR xC = "#FF3B5C"
+			    VAR xD = INT(dContas[Ordem DRE] * 90)
+			    VAR xLn = "<i class='ln' style='top:" & xE & "%'></i>"
+			    RETURN "<div class='k' style='animation-delay:" & xD & "ms'><i class='br' style='top:" & xT & "%;height:" & xH & "%;background:" & xC & ";box-shadow:0 0 10px " & xC & "80'></i>" & xLn & "<span class='vl' style='top:calc(" & xT & "% - 20px)'>" & xV & "</span></div>",
+			    "", dContas[Ordem DRE], ASC)
+			VAR Rotulos = CONCATENATEX(G2, "<div>" & dContas[Grupo] & "</div>", "", dContas[Ordem DRE], ASC)
+			RETURN
+			IF(ISBLANK(Rec), BLANK(),
+			"<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent}@keyframes hcUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes hcGrow{from{width:0}}.pn{height:100vh;box-sizing:border-box;padding:14px 18px 12px 18px;border-radius:16px;position:relative;overflow:hidden;display:flex;flex-direction:column;font-family:Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#FFFFFF1F,#FFFFFF08);border:1px solid #FFFFFF2E;backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 #FFFFFF26;animation:hcUp 700ms ease-out}.pn:before{content:'';position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,#C6FF00,#00B3FF)}.tt{display:flex;justify-content:space-between;align-items:center;font-size:12px;line-height:16px;letter-spacing:2px;font-weight:600;color:#9FB3C8;white-space:nowrap}.ar{flex:1;min-height:0;position:relative;display:flex;margin-top:30px}.z{position:absolute;left:0;right:0;height:0;border-top:1px solid #FFFFFF59}.k{flex:1;min-width:0;position:relative;opacity:0;animation:hcUp 600ms ease-out forwards}.k .br{position:absolute;left:16%;right:16%;display:block;border-radius:4px}.k .ln{position:absolute;left:84%;right:-16%;height:0;border-top:1px dashed #FFFFFF4D}.k .vl{position:absolute;left:-8px;right:-8px;text-align:center;font-size:13px;line-height:16px;font-weight:700;color:#FFFFFF;white-space:nowrap;text-shadow:0 0 10px #00B3FF80}.lb{display:flex;height:30px;margin-top:6px}.lb div{flex:1;min-width:0;padding:0 2px;text-align:center;font-size:12px;line-height:14px;color:#9FB3C8;overflow:hidden;overflow-wrap:anywhere}</style>" &
+			"<div class='pn'><div class='tt'><span>CASCATA DO RESULTADO</span></div><div class='ar'><i class='z' style='top:" & Z & "%'></i>" &
+			"<div class='k' style='animation-delay:0ms'><i class='br' style='top:" & tRec & "%;height:" & hRec & "%;background:#00B3FF;box-shadow:0 0 10px #00B3FF80'></i><i class='ln' style='top:" & eRec & "%'></i><span class='vl' style='top:calc(" & tRec & "% - 20px)'>" & vRec & "</span></div>" &
+			Colunas &
+			"<div class='k' style='animation-delay:" & dRes & "ms'><i class='br' style='top:" & tRes & "%;height:" & hRes & "%;background:" & cRes & ";box-shadow:0 0 10px " & cRes & "80'></i><span class='vl' style='top:calc(" & tRes & "% - 20px)'>" & vRes & "</span></div>" &
+			"</div><div class='lb'><div>Receita</div>" & Rotulos & "<div>Resultado</div></div></div>")
+			```
+
+		measure 'HTML Orçado x Realizado' = ```
+			VAR T = ADDCOLUMNS(SUMMARIZE(FILTER(dContas, dContas[Tipo] <> "Receita"), dContas[Grupo]), "@r", [Despesas], "@o", [Despesas Orçadas])
+			VAR T2 = ADDCOLUMNS(T, "@p", DIVIDE([@r], [@o]))
+			VAR Linhas = CONCATENATEX(T2,
+			    VAR xR = [@r]
+			    VAR xO = [@o]
+			    VAR pp = [@p]
+			    VAR xG = dContas[Grupo]
+			    VAR xC = IF(pp <= 1, "#C6FF00", IF(pp <= 1.05, "#FFD60A", "#FF3B5C"))
+			    VAR xW = INT(MIN(pp / 1.25, 1) * 100)
+			    VAR xP = FORMAT(pp, "0.0%", "pt-BR")
+			    VAR xFr = IF(xR < 0, "-", "") & "R$ " & IF(ABS(xR) >= 1000000, FORMAT(ABS(xR) / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(ABS(xR) / 1000, "#,0", "pt-BR") & " mil")
+			    VAR xFo = IF(xO < 0, "-", "") & "R$ " & IF(ABS(xO) >= 1000000, FORMAT(ABS(xO) / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(ABS(xO) / 1000, "#,0", "pt-BR") & " mil")
+			    VAR xD = INT(COUNTROWS(FILTER(T2, [@p] > pp)) * 90)
+			    RETURN "<div class='r' style='animation-delay:" & xD & "ms'><div class='rh'><span>" & xG & "</span><span class='fa' style='color:" & xC & ";border-color:" & xC & "'><b style='background:" & xC & ";box-shadow:0 0 6px " & xC & "'></b>" & xP & "</span></div><div class='tr'><i style='width:" & xW & "%;background:" & xC & ";box-shadow:0 0 8px " & xC & "'></i><u></u></div><div class='rs'>Real " & xFr & " · Orç. " & xFo & "</div></div>",
+			    "", [@p], DESC)
+			RETURN
+			IF(ISBLANK([Despesas]), BLANK(),
+			"<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent}@keyframes hcUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes hcGrow{from{width:0}}.pn{height:100vh;box-sizing:border-box;padding:14px 18px 12px 18px;border-radius:16px;position:relative;overflow:hidden;display:flex;flex-direction:column;font-family:Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#FFFFFF1F,#FFFFFF08);border:1px solid #FFFFFF2E;backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 #FFFFFF26;animation:hcUp 700ms ease-out}.pn:before{content:'';position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,#C6FF00,#00B3FF)}.tt{display:flex;justify-content:space-between;align-items:center;font-size:12px;line-height:16px;letter-spacing:2px;font-weight:600;color:#9FB3C8;white-space:nowrap}.lg{font-size:12px;letter-spacing:0;font-weight:400;color:#9FB3C8}.lg i{display:inline-block;width:2px;height:12px;background:#FFFFFF;margin-right:6px;vertical-align:-1px;box-shadow:0 0 6px #00B3FF}.rw{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-around;margin-top:6px}.r{opacity:0;animation:hcUp 600ms ease-out forwards}.rh{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;line-height:18px;font-weight:600;color:#FFFFFF;white-space:nowrap}.rh span{overflow:hidden;text-overflow:ellipsis}.fa{font-size:12px;line-height:16px;font-weight:700;padding:1px 8px;border:1px solid;border-radius:12px}.fa b{display:inline-block;width:8px;height:8px;border-radius:8px;margin-right:6px}.tr{position:relative;height:8px;border-radius:8px;background:#FFFFFF14;margin:5px 0 3px 0}.tr i{position:absolute;left:0;top:0;display:block;height:8px;border-radius:8px;animation:hcGrow 1100ms ease-out}.tr u{position:absolute;left:80%;top:-4px;width:2px;height:16px;background:#FFFFFF;box-shadow:0 0 6px #00B3FF}.rs{font-size:12px;line-height:16px;color:#9FB3C8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>" &
+			"<div class='pn'><div class='tt'><span>ORÇADO X REALIZADO</span><span class='lg'><i></i>orçado</span></div><div class='rw'>" &
+			Linhas &
+			"</div></div>")
+			```
