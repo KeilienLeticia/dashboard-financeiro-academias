@@ -1,0 +1,447 @@
+createOrReplace
+
+	ref table _Medidas
+
+		measure 'Receita Bruta' = CALCULATE(SUM(fLancamentos[Valor]), dContas[Tipo] = "Receita")
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'Deduções' = CALCULATE(SUM(fLancamentos[Valor]), dContas[Tipo] = "Dedução")
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'Receita Líquida' = [Receita Bruta] - [Deduções]
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'Custos dos Serviços' = CALCULATE(SUM(fLancamentos[Valor]), dContas[Grupo] = "Pessoal")
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'Lucro Bruto' = [Receita Líquida] - [Custos dos Serviços]
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'Despesas Operacionais' = CALCULATE(SUM(fLancamentos[Valor]), dContas[Tipo] = "Despesa", dContas[Grupo] <> "Pessoal", dContas[Conta] <> "Taxas de cartão")
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'Resultado Financeiro' = - CALCULATE(SUM(fLancamentos[Valor]), dContas[Conta] = "Taxas de cartão")
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'LAIR' = [Lucro Bruto] - [Despesas Operacionais] + [Resultado Financeiro]
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'IRPJ e CSLL' = MAX([LAIR], 0) * [Alíquota IRPJ CSLL]
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'Lucro Líquido' = [LAIR] - [IRPJ e CSLL]
+			formatString: \R\$ #,##0.00;-\R\$ #,##0.00;\R\$ #,##0.00
+			displayFolder: DRE\1. Linhas da DRE
+
+		measure 'Alíquota IRPJ CSLL' = 0.34
+			formatString: 0.0%;-0.0%;0.0%
+			displayFolder: DRE\2. Indicadores
+
+		measure 'Margem Bruta %' = DIVIDE([Lucro Bruto], [Receita Líquida])
+			formatString: 0.0%;-0.0%;0.0%
+			displayFolder: DRE\2. Indicadores
+
+		measure 'Margem LAIR %' = DIVIDE([LAIR], [Receita Líquida])
+			formatString: 0.0%;-0.0%;0.0%
+			displayFolder: DRE\2. Indicadores
+
+		measure 'Margem Líquida %' = DIVIDE([Lucro Líquido], [Receita Líquida])
+			formatString: 0.0%;-0.0%;0.0%
+			displayFolder: DRE\2. Indicadores
+
+		measure 'HTML DRE' = ```
+			VAR vRB1 = CALCULATE([Receita Bruta], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vRB2 = CALCULATE([Receita Bruta], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vRBT = [Receita Bruta]
+			VAR vDED1 = CALCULATE([Deduções], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vDED2 = CALCULATE([Deduções], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vDEDT = [Deduções]
+			VAR vRL1 = CALCULATE([Receita Líquida], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vRL2 = CALCULATE([Receita Líquida], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vRLT = [Receita Líquida]
+			VAR vCS1 = CALCULATE([Custos dos Serviços], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vCS2 = CALCULATE([Custos dos Serviços], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vCST = [Custos dos Serviços]
+			VAR vLB1 = CALCULATE([Lucro Bruto], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vLB2 = CALCULATE([Lucro Bruto], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vLBT = [Lucro Bruto]
+			VAR vDO1 = CALCULATE([Despesas Operacionais], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vDO2 = CALCULATE([Despesas Operacionais], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vDOT = [Despesas Operacionais]
+			VAR vRF1 = CALCULATE([Resultado Financeiro], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vRF2 = CALCULATE([Resultado Financeiro], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vRFT = [Resultado Financeiro]
+			VAR vLAIR1 = CALCULATE([LAIR], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vLAIR2 = CALCULATE([LAIR], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vLAIRT = [LAIR]
+			VAR vIR1 = CALCULATE([IRPJ e CSLL], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vIR2 = CALCULATE([IRPJ e CSLL], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vIRT = [IRPJ e CSLL]
+			VAR vLL1 = CALCULATE([Lucro Líquido], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vLL2 = CALCULATE([Lucro Líquido], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vLLT = [Lucro Líquido]
+			VAR xBase = vRBT
+			VAR _afRB1 = ABS(vRB1)
+			VAR fRB1 = IF(vRB1 < 0, "-", "") & "R$ " & IF(_afRB1 >= 1000000, FORMAT(_afRB1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRB1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afRB2 = ABS(vRB2)
+			VAR fRB2 = IF(vRB2 < 0, "-", "") & "R$ " & IF(_afRB2 >= 1000000, FORMAT(_afRB2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRB2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afRBT = ABS(vRBT)
+			VAR fRBT = IF(vRBT < 0, "-", "") & "R$ " & IF(_afRBT >= 1000000, FORMAT(_afRBT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRBT / 1000, "#,0", "pt-BR") & " mil")
+			VAR pRB = DIVIDE(vRBT, xBase)
+			VAR tRB = FORMAT(pRB, "0.0%", "pt-BR")
+			VAR wRB = INT(MIN(ABS(pRB), 1) * 100)
+			VAR _afDED1 = ABS((-vDED1))
+			VAR fDED1 = IF((-vDED1) < 0, "-", "") & "R$ " & IF(_afDED1 >= 1000000, FORMAT(_afDED1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afDED1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afDED2 = ABS((-vDED2))
+			VAR fDED2 = IF((-vDED2) < 0, "-", "") & "R$ " & IF(_afDED2 >= 1000000, FORMAT(_afDED2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afDED2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afDEDT = ABS((-vDEDT))
+			VAR fDEDT = IF((-vDEDT) < 0, "-", "") & "R$ " & IF(_afDEDT >= 1000000, FORMAT(_afDEDT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afDEDT / 1000, "#,0", "pt-BR") & " mil")
+			VAR pDED = DIVIDE(-vDEDT, xBase)
+			VAR tDED = FORMAT(pDED, "0.0%", "pt-BR")
+			VAR wDED = INT(MIN(ABS(pDED), 1) * 100)
+			VAR _afRL1 = ABS(vRL1)
+			VAR fRL1 = IF(vRL1 < 0, "-", "") & "R$ " & IF(_afRL1 >= 1000000, FORMAT(_afRL1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRL1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afRL2 = ABS(vRL2)
+			VAR fRL2 = IF(vRL2 < 0, "-", "") & "R$ " & IF(_afRL2 >= 1000000, FORMAT(_afRL2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRL2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afRLT = ABS(vRLT)
+			VAR fRLT = IF(vRLT < 0, "-", "") & "R$ " & IF(_afRLT >= 1000000, FORMAT(_afRLT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRLT / 1000, "#,0", "pt-BR") & " mil")
+			VAR pRL = DIVIDE(vRLT, xBase)
+			VAR tRL = FORMAT(pRL, "0.0%", "pt-BR")
+			VAR wRL = INT(MIN(ABS(pRL), 1) * 100)
+			VAR cRL = IF(vRLT >= 0, "#C6FF00", "#FF3B5C")
+			VAR _afCS1 = ABS((-vCS1))
+			VAR fCS1 = IF((-vCS1) < 0, "-", "") & "R$ " & IF(_afCS1 >= 1000000, FORMAT(_afCS1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afCS1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afCS2 = ABS((-vCS2))
+			VAR fCS2 = IF((-vCS2) < 0, "-", "") & "R$ " & IF(_afCS2 >= 1000000, FORMAT(_afCS2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afCS2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afCST = ABS((-vCST))
+			VAR fCST = IF((-vCST) < 0, "-", "") & "R$ " & IF(_afCST >= 1000000, FORMAT(_afCST / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afCST / 1000, "#,0", "pt-BR") & " mil")
+			VAR pCS = DIVIDE(-vCST, xBase)
+			VAR tCS = FORMAT(pCS, "0.0%", "pt-BR")
+			VAR wCS = INT(MIN(ABS(pCS), 1) * 100)
+			VAR _afLB1 = ABS(vLB1)
+			VAR fLB1 = IF(vLB1 < 0, "-", "") & "R$ " & IF(_afLB1 >= 1000000, FORMAT(_afLB1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLB1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLB2 = ABS(vLB2)
+			VAR fLB2 = IF(vLB2 < 0, "-", "") & "R$ " & IF(_afLB2 >= 1000000, FORMAT(_afLB2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLB2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLBT = ABS(vLBT)
+			VAR fLBT = IF(vLBT < 0, "-", "") & "R$ " & IF(_afLBT >= 1000000, FORMAT(_afLBT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLBT / 1000, "#,0", "pt-BR") & " mil")
+			VAR pLB = DIVIDE(vLBT, xBase)
+			VAR tLB = FORMAT(pLB, "0.0%", "pt-BR")
+			VAR wLB = INT(MIN(ABS(pLB), 1) * 100)
+			VAR cLB = IF(vLBT >= 0, "#C6FF00", "#FF3B5C")
+			VAR _afDO1 = ABS((-vDO1))
+			VAR fDO1 = IF((-vDO1) < 0, "-", "") & "R$ " & IF(_afDO1 >= 1000000, FORMAT(_afDO1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afDO1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afDO2 = ABS((-vDO2))
+			VAR fDO2 = IF((-vDO2) < 0, "-", "") & "R$ " & IF(_afDO2 >= 1000000, FORMAT(_afDO2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afDO2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afDOT = ABS((-vDOT))
+			VAR fDOT = IF((-vDOT) < 0, "-", "") & "R$ " & IF(_afDOT >= 1000000, FORMAT(_afDOT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afDOT / 1000, "#,0", "pt-BR") & " mil")
+			VAR pDO = DIVIDE(-vDOT, xBase)
+			VAR tDO = FORMAT(pDO, "0.0%", "pt-BR")
+			VAR wDO = INT(MIN(ABS(pDO), 1) * 100)
+			VAR _afRF1 = ABS(vRF1)
+			VAR fRF1 = IF(vRF1 < 0, "-", "") & "R$ " & IF(_afRF1 >= 1000000, FORMAT(_afRF1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRF1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afRF2 = ABS(vRF2)
+			VAR fRF2 = IF(vRF2 < 0, "-", "") & "R$ " & IF(_afRF2 >= 1000000, FORMAT(_afRF2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRF2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afRFT = ABS(vRFT)
+			VAR fRFT = IF(vRFT < 0, "-", "") & "R$ " & IF(_afRFT >= 1000000, FORMAT(_afRFT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRFT / 1000, "#,0", "pt-BR") & " mil")
+			VAR pRF = DIVIDE(vRFT, xBase)
+			VAR tRF = FORMAT(pRF, "0.0%", "pt-BR")
+			VAR wRF = INT(MIN(ABS(pRF), 1) * 100)
+			VAR cRF = IF(vRFT >= 0, "#C6FF00", "#FF3B5C")
+			VAR _afLAIR1 = ABS(vLAIR1)
+			VAR fLAIR1 = IF(vLAIR1 < 0, "-", "") & "R$ " & IF(_afLAIR1 >= 1000000, FORMAT(_afLAIR1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLAIR1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLAIR2 = ABS(vLAIR2)
+			VAR fLAIR2 = IF(vLAIR2 < 0, "-", "") & "R$ " & IF(_afLAIR2 >= 1000000, FORMAT(_afLAIR2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLAIR2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLAIRT = ABS(vLAIRT)
+			VAR fLAIRT = IF(vLAIRT < 0, "-", "") & "R$ " & IF(_afLAIRT >= 1000000, FORMAT(_afLAIRT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLAIRT / 1000, "#,0", "pt-BR") & " mil")
+			VAR pLAIR = DIVIDE(vLAIRT, xBase)
+			VAR tLAIR = FORMAT(pLAIR, "0.0%", "pt-BR")
+			VAR wLAIR = INT(MIN(ABS(pLAIR), 1) * 100)
+			VAR cLAIR = IF(vLAIRT >= 0, "#C6FF00", "#FF3B5C")
+			VAR _afIR1 = ABS((-vIR1))
+			VAR fIR1 = IF((-vIR1) < 0, "-", "") & "R$ " & IF(_afIR1 >= 1000000, FORMAT(_afIR1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afIR1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afIR2 = ABS((-vIR2))
+			VAR fIR2 = IF((-vIR2) < 0, "-", "") & "R$ " & IF(_afIR2 >= 1000000, FORMAT(_afIR2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afIR2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afIRT = ABS((-vIRT))
+			VAR fIRT = IF((-vIRT) < 0, "-", "") & "R$ " & IF(_afIRT >= 1000000, FORMAT(_afIRT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afIRT / 1000, "#,0", "pt-BR") & " mil")
+			VAR pIR = DIVIDE(-vIRT, xBase)
+			VAR tIR = FORMAT(pIR, "0.0%", "pt-BR")
+			VAR wIR = INT(MIN(ABS(pIR), 1) * 100)
+			VAR _afLL1 = ABS(vLL1)
+			VAR fLL1 = IF(vLL1 < 0, "-", "") & "R$ " & IF(_afLL1 >= 1000000, FORMAT(_afLL1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLL1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLL2 = ABS(vLL2)
+			VAR fLL2 = IF(vLL2 < 0, "-", "") & "R$ " & IF(_afLL2 >= 1000000, FORMAT(_afLL2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLL2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLLT = ABS(vLLT)
+			VAR fLLT = IF(vLLT < 0, "-", "") & "R$ " & IF(_afLLT >= 1000000, FORMAT(_afLLT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLLT / 1000, "#,0", "pt-BR") & " mil")
+			VAR pLL = DIVIDE(vLLT, xBase)
+			VAR tLL = FORMAT(pLL, "0.0%", "pt-BR")
+			VAR wLL = INT(MIN(ABS(pLL), 1) * 100)
+			VAR cLL = IF(vLLT >= 0, "#C6FF00", "#FF3B5C")
+			RETURN
+			"<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent}@keyframes hcUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes hcGrow{from{width:0}}.pn{height:100vh;box-sizing:border-box;padding:14px 18px 12px 18px;border-radius:16px;position:relative;overflow:hidden;display:flex;flex-direction:column;font-family:Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#FFFFFF1F,#FFFFFF08);border:1px solid #FFFFFF2E;backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 #FFFFFF26;animation:hcUp 700ms ease-out}.pn:before{content:'';position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,#C6FF00,#00B3FF)}.g{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 104px 112px;column-gap:10px;align-items:center}.hd{font-size:12px;line-height:16px;letter-spacing:2px;font-weight:600;color:#9FB3C8;white-space:nowrap;padding:0 10px 8px 10px;border-bottom:1px solid #FFFFFF2E}.hd div{text-align:right;overflow:hidden}.hd div:first-child{text-align:left}.rw{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;padding-top:6px}.r{padding:0 10px;border-radius:8px;font-size:13px;line-height:18px;color:#C9D6E3;white-space:nowrap;opacity:0;animation:hcUp 600ms ease-out forwards;border-left:3px solid transparent}.r div{text-align:right;overflow:hidden;text-overflow:ellipsis}.r div:first-child{text-align:left}.r.s{background:#FFFFFF0F;color:#FFFFFF;font-weight:700;font-size:14px;line-height:24px;border-left-color:#00B3FF}.r.f{background:linear-gradient(90deg,#C6FF0026,#00B3FF14);color:#FFFFFF;font-weight:700;font-size:16px;line-height:30px;border-left-color:#C6FF00}.r.f .a{font-size:18px;text-shadow:0 0 12px #C6FF0080}.av{display:flex;align-items:center;justify-content:flex-end;gap:6px}.av b{display:block;width:48px;height:6px;border-radius:6px;background:#FFFFFF14;overflow:hidden}.av i{display:block;height:6px;border-radius:6px;animation:hcGrow 1100ms ease-out}.av span{font-size:12px;min-width:44px;text-align:right}</style><div class='pn'><div class='g hd'><div>DRE GERENCIAL</div><div>1º SEM</div><div>2º SEM</div><div>ACUMULADO</div><div>AV %</div></div><div class='rw'><div class='g r' style='animation-delay:0ms'><div>Receita bruta</div><div>" &
+			fRB1 &
+			"</div><div>" &
+			fRB2 &
+			"</div><div class='a'>" &
+			fRBT &
+			"</div><div class='av'><b><i style='width:" &
+			wRB &
+			"%;background:#00B3FF'></i></b><span>" &
+			tRB &
+			"</span></div></div><div class='g r' style='animation-delay:70ms'><div>(-) Deduções e impostos</div><div>" &
+			fDED1 &
+			"</div><div>" &
+			fDED2 &
+			"</div><div class='a'>" &
+			fDEDT &
+			"</div><div class='av'><b><i style='width:" &
+			wDED &
+			"%;background:#9FB3C8'></i></b><span>" &
+			tDED &
+			"</span></div></div><div class='g r s' style='animation-delay:140ms'><div>(=) Receita líquida</div><div>" &
+			fRL1 &
+			"</div><div>" &
+			fRL2 &
+			"</div><div class='a' style='color:" &
+			cRL &
+			"'>" &
+			fRLT &
+			"</div><div class='av'><b><i style='width:" &
+			wRL &
+			"%;background:" &
+			cRL &
+			"'></i></b><span>" &
+			tRL &
+			"</span></div></div><div class='g r' style='animation-delay:210ms'><div>(-) Custos dos serviços (CSV)</div><div>" &
+			fCS1 &
+			"</div><div>" &
+			fCS2 &
+			"</div><div class='a'>" &
+			fCST &
+			"</div><div class='av'><b><i style='width:" &
+			wCS &
+			"%;background:#9FB3C8'></i></b><span>" &
+			tCS &
+			"</span></div></div><div class='g r s' style='animation-delay:280ms'><div>(=) Lucro bruto</div><div>" &
+			fLB1 &
+			"</div><div>" &
+			fLB2 &
+			"</div><div class='a' style='color:" &
+			cLB &
+			"'>" &
+			fLBT &
+			"</div><div class='av'><b><i style='width:" &
+			wLB &
+			"%;background:" &
+			cLB &
+			"'></i></b><span>" &
+			tLB &
+			"</span></div></div><div class='g r' style='animation-delay:350ms'><div>(-) Despesas operacionais</div><div>" &
+			fDO1 &
+			"</div><div>" &
+			fDO2 &
+			"</div><div class='a'>" &
+			fDOT &
+			"</div><div class='av'><b><i style='width:" &
+			wDO &
+			"%;background:#9FB3C8'></i></b><span>" &
+			tDO &
+			"</span></div></div><div class='g r' style='animation-delay:420ms'><div>(+/-) Resultado financeiro</div><div>" &
+			fRF1 &
+			"</div><div>" &
+			fRF2 &
+			"</div><div class='a' style='color:" &
+			cRF &
+			"'>" &
+			fRFT &
+			"</div><div class='av'><b><i style='width:" &
+			wRF &
+			"%;background:" &
+			cRF &
+			"'></i></b><span>" &
+			tRF &
+			"</span></div></div><div class='g r s' style='animation-delay:490ms'><div>(=) Resultado antes do IR (LAIR)</div><div>" &
+			fLAIR1 &
+			"</div><div>" &
+			fLAIR2 &
+			"</div><div class='a' style='color:" &
+			cLAIR &
+			"'>" &
+			fLAIRT &
+			"</div><div class='av'><b><i style='width:" &
+			wLAIR &
+			"%;background:" &
+			cLAIR &
+			"'></i></b><span>" &
+			tLAIR &
+			"</span></div></div><div class='g r' style='animation-delay:560ms'><div>(-) IRPJ e CSLL</div><div>" &
+			fIR1 &
+			"</div><div>" &
+			fIR2 &
+			"</div><div class='a'>" &
+			fIRT &
+			"</div><div class='av'><b><i style='width:" &
+			wIR &
+			"%;background:#9FB3C8'></i></b><span>" &
+			tIR &
+			"</span></div></div><div class='g r f' style='animation-delay:630ms'><div>(=) Lucro líquido</div><div>" &
+			fLL1 &
+			"</div><div>" &
+			fLL2 &
+			"</div><div class='a' style='color:" &
+			cLL &
+			"'>" &
+			fLLT &
+			"</div><div class='av'><b><i style='width:" &
+			wLL &
+			"%;background:" &
+			cLL &
+			"'></i></b><span>" &
+			tLL &
+			"</span></div></div></div></div>"
+			```
+			displayFolder: DRE\3. Visuais HTML
+
+		measure 'HTML DRE Cartões' = ```
+			VAR xRL = [Receita Líquida]
+			VAR vRF1 = CALCULATE([Resultado Financeiro], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vRF2 = CALCULATE([Resultado Financeiro], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vRFT = [Resultado Financeiro]
+			VAR _afRF1 = ABS(vRF1)
+			VAR fRF1 = IF(vRF1 < 0, "-", "") & "R$ " & IF(_afRF1 >= 1000000, FORMAT(_afRF1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRF1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afRF2 = ABS(vRF2)
+			VAR fRF2 = IF(vRF2 < 0, "-", "") & "R$ " & IF(_afRF2 >= 1000000, FORMAT(_afRF2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRF2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afRFT = ABS(vRFT)
+			VAR fRFT = IF(vRFT < 0, "-", "") & "R$ " & IF(_afRFT >= 1000000, FORMAT(_afRFT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afRFT / 1000, "#,0", "pt-BR") & " mil")
+			VAR tRF = FORMAT(DIVIDE(vRFT, xRL), "0.0%", "pt-BR") & " RL"
+			VAR _mRF = MAX(ABS(vRF1), ABS(vRF2))
+			VAR wRF1 = INT(DIVIDE(ABS(vRF1), _mRF) * 100)
+			VAR wRF2 = INT(DIVIDE(ABS(vRF2), _mRF) * 100)
+			VAR cRF = IF(vRFT >= 0, "#C6FF00", "#FF3B5C")
+			VAR vLAIR1 = CALCULATE([LAIR], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vLAIR2 = CALCULATE([LAIR], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vLAIRT = [LAIR]
+			VAR _afLAIR1 = ABS(vLAIR1)
+			VAR fLAIR1 = IF(vLAIR1 < 0, "-", "") & "R$ " & IF(_afLAIR1 >= 1000000, FORMAT(_afLAIR1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLAIR1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLAIR2 = ABS(vLAIR2)
+			VAR fLAIR2 = IF(vLAIR2 < 0, "-", "") & "R$ " & IF(_afLAIR2 >= 1000000, FORMAT(_afLAIR2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLAIR2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLAIRT = ABS(vLAIRT)
+			VAR fLAIRT = IF(vLAIRT < 0, "-", "") & "R$ " & IF(_afLAIRT >= 1000000, FORMAT(_afLAIRT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLAIRT / 1000, "#,0", "pt-BR") & " mil")
+			VAR tLAIR = FORMAT(DIVIDE(vLAIRT, xRL), "0.0%", "pt-BR") & " RL"
+			VAR _mLAIR = MAX(ABS(vLAIR1), ABS(vLAIR2))
+			VAR wLAIR1 = INT(DIVIDE(ABS(vLAIR1), _mLAIR) * 100)
+			VAR wLAIR2 = INT(DIVIDE(ABS(vLAIR2), _mLAIR) * 100)
+			VAR cLAIR = IF(vLAIRT >= 0, "#C6FF00", "#FF3B5C")
+			VAR vIR1 = CALCULATE([IRPJ e CSLL], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vIR2 = CALCULATE([IRPJ e CSLL], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vIRT = [IRPJ e CSLL]
+			VAR _afIR1 = ABS(vIR1)
+			VAR fIR1 = IF(vIR1 < 0, "-", "") & "R$ " & IF(_afIR1 >= 1000000, FORMAT(_afIR1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afIR1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afIR2 = ABS(vIR2)
+			VAR fIR2 = IF(vIR2 < 0, "-", "") & "R$ " & IF(_afIR2 >= 1000000, FORMAT(_afIR2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afIR2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afIRT = ABS(vIRT)
+			VAR fIRT = IF(vIRT < 0, "-", "") & "R$ " & IF(_afIRT >= 1000000, FORMAT(_afIRT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afIRT / 1000, "#,0", "pt-BR") & " mil")
+			VAR tIR = FORMAT(DIVIDE(vIRT, xRL), "0.0%", "pt-BR") & " RL"
+			VAR _mIR = MAX(ABS(vIR1), ABS(vIR2))
+			VAR wIR1 = INT(DIVIDE(ABS(vIR1), _mIR) * 100)
+			VAR wIR2 = INT(DIVIDE(ABS(vIR2), _mIR) * 100)
+			VAR cIR = "#00B3FF"
+			VAR vLL1 = CALCULATE([Lucro Líquido], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) <= 6)))
+			VAR vLL2 = CALCULATE([Lucro Líquido], KEEPFILTERS(FILTER(ALL(dCalendario[Date]), MONTH(dCalendario[Date]) > 6)))
+			VAR vLLT = [Lucro Líquido]
+			VAR _afLL1 = ABS(vLL1)
+			VAR fLL1 = IF(vLL1 < 0, "-", "") & "R$ " & IF(_afLL1 >= 1000000, FORMAT(_afLL1 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLL1 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLL2 = ABS(vLL2)
+			VAR fLL2 = IF(vLL2 < 0, "-", "") & "R$ " & IF(_afLL2 >= 1000000, FORMAT(_afLL2 / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLL2 / 1000, "#,0", "pt-BR") & " mil")
+			VAR _afLLT = ABS(vLLT)
+			VAR fLLT = IF(vLLT < 0, "-", "") & "R$ " & IF(_afLLT >= 1000000, FORMAT(_afLLT / 1000000, "#,0.0", "pt-BR") & " mi", FORMAT(_afLLT / 1000, "#,0", "pt-BR") & " mil")
+			VAR tLL = FORMAT(DIVIDE(vLLT, xRL), "0.0%", "pt-BR") & " RL"
+			VAR _mLL = MAX(ABS(vLL1), ABS(vLL2))
+			VAR wLL1 = INT(DIVIDE(ABS(vLL1), _mLL) * 100)
+			VAR wLL2 = INT(DIVIDE(ABS(vLL2), _mLL) * 100)
+			VAR cLL = IF(vLLT >= 0, "#C6FF00", "#FF3B5C")
+			RETURN
+			"<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent}.hc{display:flex;gap:12px;width:100%;height:132px;box-sizing:border-box;padding:4px;overflow:hidden;background:transparent;font-family:Segoe UI,Arial,sans-serif}.hc .c{flex:1;min-width:0;box-sizing:border-box;height:124px;padding:12px 16px;border-radius:16px;position:relative;overflow:hidden;background:linear-gradient(135deg,#FFFFFF1F,#FFFFFF08);border:1px solid #FFFFFF2E;backdrop-filter:blur(12px);box-shadow:0 0 18px #00B3FF33,inset 0 1px 0 #FFFFFF26;opacity:0;animation:hcUp 700ms ease-out forwards}.hc .c:before{content:'';position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,#C6FF00,#00B3FF)}.hc .t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;line-height:16px;letter-spacing:2px;font-weight:600;color:#9FB3C8;white-space:nowrap;overflow:hidden}.hc .t span{letter-spacing:0;font-weight:700;padding:0 8px;border:1px solid;border-radius:12px}.hc .v{font-size:30px;line-height:36px;font-weight:700;color:#FFFFFF;white-space:nowrap;text-shadow:0 0 14px #00B3FF80}.hc .s{display:flex;gap:10px;margin-top:8px}.hc .s div{flex:1;min-width:0}.hc .s p{margin:0;font-size:12px;line-height:16px;color:#9FB3C8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hc .s b{display:block;height:4px;border-radius:4px;background:#FFFFFF14;margin-top:4px;overflow:hidden}.hc .s i{display:block;height:4px;border-radius:4px;animation:hcGrow 1100ms ease-out}@keyframes hcUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes hcGrow{from{width:0}}</style><div class='hc'><div class='c' style='animation-delay:0ms'><div class='t'>RES. FINANCEIRO<span style='color:" &
+			cRF &
+			";border-color:" &
+			cRF &
+			"'>" &
+			tRF &
+			"</span></div><div class='v'>" &
+			fRFT &
+			"</div><div class='s'><div><p>1º sem " &
+			fRF1 &
+			"</p><b><i style='width:" &
+			wRF1 &
+			"%;background:" &
+			cRF &
+			"'></i></b></div><div><p>2º sem " &
+			fRF2 &
+			"</p><b><i style='width:" &
+			wRF2 &
+			"%;background:#00B3FF'></i></b></div></div></div><div class='c' style='animation-delay:120ms'><div class='t'>LAIR<span style='color:" &
+			cLAIR &
+			";border-color:" &
+			cLAIR &
+			"'>" &
+			tLAIR &
+			"</span></div><div class='v'>" &
+			fLAIRT &
+			"</div><div class='s'><div><p>1º sem " &
+			fLAIR1 &
+			"</p><b><i style='width:" &
+			wLAIR1 &
+			"%;background:" &
+			cLAIR &
+			"'></i></b></div><div><p>2º sem " &
+			fLAIR2 &
+			"</p><b><i style='width:" &
+			wLAIR2 &
+			"%;background:#00B3FF'></i></b></div></div></div><div class='c' style='animation-delay:240ms'><div class='t'>IRPJ E CSLL<span style='color:" &
+			cIR &
+			";border-color:" &
+			cIR &
+			"'>" &
+			tIR &
+			"</span></div><div class='v'>" &
+			fIRT &
+			"</div><div class='s'><div><p>1º sem " &
+			fIR1 &
+			"</p><b><i style='width:" &
+			wIR1 &
+			"%;background:" &
+			cIR &
+			"'></i></b></div><div><p>2º sem " &
+			fIR2 &
+			"</p><b><i style='width:" &
+			wIR2 &
+			"%;background:#00B3FF'></i></b></div></div></div><div class='c' style='animation-delay:360ms'><div class='t'>LUCRO LÍQUIDO<span style='color:" &
+			cLL &
+			";border-color:" &
+			cLL &
+			"'>" &
+			tLL &
+			"</span></div><div class='v'>" &
+			fLLT &
+			"</div><div class='s'><div><p>1º sem " &
+			fLL1 &
+			"</p><b><i style='width:" &
+			wLL1 &
+			"%;background:" &
+			cLL &
+			"'></i></b></div><div><p>2º sem " &
+			fLL2 &
+			"</p><b><i style='width:" &
+			wLL2 &
+			"%;background:#00B3FF'></i></b></div></div></div></div>"
+			```
+			displayFolder: DRE\3. Visuais HTML
+
