@@ -2,7 +2,7 @@
 
 Este é um projeto de BI com foco em **gestão financeira no varejo de serviços**. Ele mostra como uma rede de academias acompanha receita, despesas e resultado frente ao orçamento, e traz uma **DRE gerencial** por semestre.
 
-🔗 **Veja o painel online:** `https://SEU-USUARIO.github.io/NOME-DO-REPOSITORIO/`
+🔗 **Veja o painel online:** `https://keilienleticia.github.io/dashboard-financeiro-academias/`
 
 ![Painel Financeiro](imagens/painel_financeiro.jpg)
 ![Painel DRE](imagens/painel_dre.jpg)
@@ -104,4 +104,4 @@ Os cartões, a cascata do resultado, o orçado x realizado e a DRE são **medida
 
 ---
 
-**Autor(a):** _seu nome_ · [LinkedIn](https://www.linkedin.com/in/seu-perfil)
+**Autor(a):** _seu nome_ · [LinkedIn](https://www.linkedin.com/in/keilien-leticia-992807247/)
